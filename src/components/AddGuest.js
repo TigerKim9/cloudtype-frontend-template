@@ -43,7 +43,7 @@ const AddGuest = () => {
         WaitlistService.getGuestById(id)
             .then((response) => {
                 setName(response.data.name)
-                setNum(response.data.num)
+              //  setNum(response.data.num)
                 setPhoneNum(response.data.phoneNum)
                 console.log(response.data)
             })
@@ -55,7 +55,7 @@ const AddGuest = () => {
     return (
         <div className="text-gray-900">
             <div className="p-4 flex justify-center my-10">
-                <h1 className="text-3xl font-extrabold text">웨이팅 리스트를 작성해주세요 😀</h1>
+                <h1 className="text-3xl font-extrabold text">마음의 편지를 작성해주세요 😀</h1>
             </div>
             <div className="px-3 py-4 flex justify-center">
                 <form>
@@ -74,28 +74,28 @@ const AddGuest = () => {
 
                         </input>
                     </div>
-                    <div className="flex items-center mb-5">
-                        <label htmlFor="num"
-                               className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">인원</label>
-                        <input type="number"
-                               id="num"
-                               name="num"
-                               placeholder="인원"
-                               value={num}
-                               onChange={(e) => setNum(e.target.value)}
-                               className="flex-1 py-2 border-b-2 border-gray-400 focus:border-black
-                                          text-gray-600 placeholder-gray-400
-                                          outline-none">
+                    // <div className="flex items-center mb-5">
+                    //     <label htmlFor="num"
+                    //            className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">인원</label>
+                    //     <input type="number"
+                    //            id="num"
+                    //            name="num"
+                    //            placeholder="인원"
+                    //            value={num}
+                    //            onChange={(e) => setNum(e.target.value)}
+                    //            className="flex-1 py-2 border-b-2 border-gray-400 focus:border-black
+                    //                       text-gray-600 placeholder-gray-400
+                    //                       outline-none">
 
-                        </input>
-                    </div>
+                    //     </input>
+                    // </div>
                     <div className="flex items-center mb-5">
                         <label htmlFor="phoneNum"
                                className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">연락처</label>
                         <input type="text"
                                id="phoneNum"
                                name="phoneNum"
-                               placeholder="예) 01012345678"
+                               placeholder="예) 마음이 아파요"
                                value={phoneNum}
                                onChange={(e) => setPhoneNum(e.target.value)}
                                className="flex-1 py-2 border-b-2 border-gray-400 focus:border-black
