@@ -44,7 +44,7 @@ const ListGuests = () => {
                 </h1>
             </div>
             <div className="p-4 flex justify-center my-10">
-                <button className="relative w-fit h-fit px-4 py-2 text-xl border bg-black text-white font-extrabold"><Link to="/add-guest">웨이팅 리스트 작성하기</Link></button>
+                <button className="relative w-fit h-fit px-4 py-2 text-xl border bg-black text-white font-extrabold"><Link to="/add-guest">마음의 편지 작성하기</Link></button>
             </div>
             <div className="px-3 py-4 flex justify-center">
                 <table className="w-10/12 text-md bg-gray-200 shadow-2xl mb-4">
