@@ -5,7 +5,7 @@ import {useNavigate, useParams} from "react-router-dom";
 const AddGuest = () => {
 
     const [name, setName] = useState('');
-  //  const [num, setNum] = useState('');
+  /*  const [num, setNum] = useState(''); */
     const [phoneNum, setPhoneNum] = useState('');
     const navigate = useNavigate();
     const {id} = useParams();
@@ -14,7 +14,7 @@ const AddGuest = () => {
         e.preventDefault();
 
         const guest = {name, 
-                       // num,
+                        num,
                        phoneNum};
 
         if (id) {
@@ -45,7 +45,7 @@ const AddGuest = () => {
         WaitlistService.getGuestById(id)
             .then((response) => {
                 setName(response.data.name)
-              //  setNum(response.data.num)
+           /*     setNum(response.data.num) */
                 setPhoneNum(response.data.phoneNum)
                 console.log(response.data)
             })
@@ -76,21 +76,22 @@ const AddGuest = () => {
 
                         </input>
                     </div>
-                    // <div className="flex items-center mb-5">
-                    //     <label htmlFor="num"
-                    //            className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">인원</label>
-                    //     <input type="number"
-                    //            id="num"
-                    //            name="num"
-                    //            placeholder="인원"
-                    //            value={num}
-                    //            onChange={(e) => setNum(e.target.value)}
-                    //            className="flex-1 py-2 border-b-2 border-gray-400 focus:border-black
-                    //                       text-gray-600 placeholder-gray-400
-                    //                       outline-none">
+                   /*  <div className="flex items-center mb-5">
+                         <label htmlFor="num"
+                                className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">인원</label>
+                         <input type="number"
+                                id="num"
+                                name="num"
+                                placeholder="인원"
+                                value={num}
+                                onChange={(e) => setNum(e.target.value)}
+                                className="flex-1 py-2 border-b-2 border-gray-400 focus:border-black
+                                           text-gray-600 placeholder-gray-400
+                                           outline-none">
 
-                    //     </input>
-                    // </div>
+                         </input>
+                     </div>
+                     */
                     <div className="flex items-center mb-5">
                         <label htmlFor="phoneNum"
                                className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">연락처</label>
