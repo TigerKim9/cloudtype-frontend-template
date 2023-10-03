@@ -40,7 +40,7 @@ const ListGuests = () => {
         <div className="text-gray-900">
             <div className="p-4 flex justify-center my-10">
                 <h1 className="text-3xl font-extrabold text">
-                    오늘은 {moment().format('MMMM Do')} 입니다.
+                  개판 마음의 편지!  오늘은 {moment().format('MMMM Do')} 입니다.
                 </h1>
             </div>
             <div className="p-4 flex justify-center my-10">
@@ -52,7 +52,7 @@ const ListGuests = () => {
                         <tr>
                             <th className="text-left p-3 px-5">번호</th>
                             <th className="text-left p-3 px-5">이름</th>
-                            <th className="text-left p-3 px-5">인원 수</th>
+                            // <th className="text-left p-3 px-5">인원 수</th>
                             <th className="text-left p-3 px-5">연락처</th>
                             <th className="text-left p-3 px-5"></th>
                         </tr>
@@ -64,23 +64,23 @@ const ListGuests = () => {
                                     <tr key={guest.id} className="border-b hover:bg-orange-100 bg-white">
                                         <td className="p-3 px-5">{guest.id}</td>
                                         <td className="p-3 px-5">{guest.name}</td>
-                                        <td className="p-3 px-5">{guest.num}</td>
+                                       // <td className="p-3 px-5">{guest.num}</td>
                                         <td className="p-3 px-5">{guest.phoneNum}</td>
-                                        <td className="p-3 px-5">
-                                            <button
-                                                type="button"
-                                                className="border border-gray-700 bg-gray-700 text-white font-bold px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-gray-800 focus:outline-none focus:shadow-outline"
-                                            >
-                                                <Link to={`/edit-guest/${guest.id}`}>수정</Link>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="border border-red-500 bg-red-500 text-white font-bold px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-800 focus:outline-none focus:shadow-outline"
-                                                onClick={() => deleteGuest(guest.id)}
-                                            >
-                                                삭제
-                                            </button>
-                                        </td>
+                                      //  <td className="p-3 px-5">
+                                         //   <button
+                                           //     type="button"
+                                            //    className="border border-gray-700 bg-gray-700 text-white font-bold px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-gray-800 focus:outline-none focus:shadow-outline"
+                                            // >
+                                            //    <Link to={`/edit-guest/${guest.id}`}>수정</Link>
+                                           // </button>
+                                           // <button
+                                             //   type="button"
+                                              //  className="border border-red-500 bg-red-500 text-white font-bold px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-800 focus:outline-none focus:shadow-outline"
+                                               // onClick={() => deleteGuest(guest.id)}
+                                           // >
+                                            //    삭제
+                                           // </button>
+                                       // </td>
                                     </tr>
                             )
                         }
