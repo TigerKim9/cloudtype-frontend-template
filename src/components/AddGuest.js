@@ -14,7 +14,7 @@ const AddGuest = () => {
         e.preventDefault();
 
         const guest = {name, 
-                        num,
+                       /* num, */
                        phoneNum};
 
         if (id) {
