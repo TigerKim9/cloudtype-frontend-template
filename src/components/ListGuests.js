@@ -52,7 +52,7 @@ const ListGuests = () => {
                         <tr>
                             <th className="text-left p-3 px-5">번호</th>
                             <th className="text-left p-3 px-5">이름</th>
-                             <th className="text-left p-3 px-5">인원 수</th>
+                        //     <th className="text-left p-3 px-5">인원 수</th>
                             <th className="text-left p-3 px-5">연락처</th>
                             <th className="text-left p-3 px-5"></th>
                         </tr>
@@ -64,7 +64,7 @@ const ListGuests = () => {
                                     <tr key={guest.id} className="border-b hover:bg-orange-100 bg-white">
                                         <td className="p-3 px-5">{guest.id}</td>
                                         <td className="p-3 px-5">{guest.name}</td>
-                                        <td className="p-3 px-5">{guest.num}</td>
+                               //         <td className="p-3 px-5">{guest.num}</td>
                                         <td className="p-3 px-5">{guest.phoneNum}</td>
                                         <td className="p-3 px-5">
                                             // <button
