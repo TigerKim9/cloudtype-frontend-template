@@ -5,7 +5,7 @@ import {useNavigate, useParams} from "react-router-dom";
 const AddGuest = () => {
 
     const [name, setName] = useState('');
-    const [num, setNum] = useState('');
+  //  const [num, setNum] = useState('');
     const [phoneNum, setPhoneNum] = useState('');
     const navigate = useNavigate();
     const {id} = useParams();
@@ -13,7 +13,9 @@ const AddGuest = () => {
     const saveOrUpdateGuest = (e) => {
         e.preventDefault();
 
-        const guest = {name, num, phoneNum};
+        const guest = {name, 
+                       // num,
+                       phoneNum};
 
         if (id) {
 
