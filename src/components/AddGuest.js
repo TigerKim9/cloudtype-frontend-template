@@ -63,7 +63,7 @@ const AddGuest = () => {
                 <form>
                     <div className="flex items-center mb-5">
                         <label htmlFor="name"
-                               className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">이름</label>
+                               className="inline-block w-11/12 mr-6 text-right font-bold text-gray-600">제목</label>
                         <input type="text"
                                id="name"
                                name="name"
