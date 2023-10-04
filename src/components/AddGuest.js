@@ -67,7 +67,7 @@ const AddGuest = () => {
                         <input type="text"
                                id="name"
                                name="name"
-                               placeholder="이름"
+                               placeholder="제목"
                                value={name}
                                onChange={(e) => setName(e.target.value)}
                                className="flex-1 py-2 border-b-2 border-gray-400 focus:border-black
