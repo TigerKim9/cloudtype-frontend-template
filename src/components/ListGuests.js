@@ -51,7 +51,7 @@ const ListGuests = () => {
                     <thead className="border-b">
                         <tr>
                             <th className="text-left p-3 px-5">번호</th>
-                            <th className="text-left p-3 px-5">이름</th>
+                            <th className="text-left p-3 px-5">제목</th>
                             <th className="text-left p-3 px-5">내용</th>
                         </tr>
                     </thead>
