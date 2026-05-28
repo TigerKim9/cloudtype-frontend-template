@@ -1,0 +1,145 @@
+{
+  "text": [
+    {
+      "id": "T-0001",
+      "title": "동백꽃",
+      "author": "김유정",
+      "year": 1936,
+      "license": "Public Domain",
+      "excerpt": "그리고 뭣에 떼떠름한지 광주리를 척 내려놓더니 들어붓듯 내 입에 한 주먹을 디리민다."
+    },
+    {
+      "id": "T-0002",
+      "title": "운수 좋은 날",
+      "author": "현진건",
+      "year": 1924,
+      "license": "Public Domain",
+      "excerpt": "새침하게 흐린 품이 눈이 올 듯하더니 눈은 아니 오고 얼다가 만 비가 추적추적 내리는 날이었다."
+    },
+    {
+      "id": "T-0003",
+      "title": "님의 침묵",
+      "author": "한용운",
+      "year": 1926,
+      "license": "Public Domain",
+      "excerpt": "님은 갔습니다. 아아 사랑하는 나의 님은 갔습니다."
+    },
+    {
+      "id": "T-0004",
+      "title": "진달래꽃",
+      "author": "김소월",
+      "year": 1925,
+      "license": "Public Domain",
+      "excerpt": "나 보기가 역겨워 가실 때에는 말없이 고이 보내 드리오리다."
+    },
+    {
+      "id": "T-0005",
+      "title": "별 헤는 밤",
+      "author": "윤동주",
+      "year": 1941,
+      "license": "Public Domain",
+      "excerpt": "계절이 지나가는 하늘에는 가을로 가득 차 있습니다."
+    }
+  ],
+  "image": [
+    {
+      "id": "I-0001",
+      "title": "별이 빛나는 밤",
+      "author": "Vincent van Gogh",
+      "year": 1889,
+      "license": "Public Domain",
+      "phash": "1101001110100110",
+      "tags": ["night", "stars", "village", "post-impressionism"]
+    },
+    {
+      "id": "I-0002",
+      "title": "모나리자",
+      "author": "Leonardo da Vinci",
+      "year": 1503,
+      "license": "Public Domain",
+      "phash": "0011010110010110",
+      "tags": ["portrait", "woman", "renaissance"]
+    },
+    {
+      "id": "I-0003",
+      "title": "Disney Mickey Mouse Original",
+      "author": "Disney",
+      "year": 1928,
+      "license": "All Rights Reserved",
+      "phash": "1010110011100101",
+      "tags": ["mouse", "character", "cartoon"]
+    },
+    {
+      "id": "I-0004",
+      "title": "포켓몬 - 피카츄",
+      "author": "Nintendo / Game Freak",
+      "year": 1996,
+      "license": "All Rights Reserved",
+      "phash": "1110001101011010",
+      "tags": ["pokemon", "character", "yellow"]
+    }
+  ],
+  "audio": [
+    {
+      "id": "A-0001",
+      "title": "Symphony No. 9",
+      "author": "Beethoven",
+      "year": 1824,
+      "license": "Public Domain",
+      "fingerprint": "C-D-E-C-G-A-G-F-E-D-C",
+      "bpm": 88
+    },
+    {
+      "id": "A-0002",
+      "title": "아리랑",
+      "author": "Traditional Korean",
+      "year": 1865,
+      "license": "Public Domain",
+      "fingerprint": "G-A-C-D-E-D-C-A-G",
+      "bpm": 76
+    },
+    {
+      "id": "A-0003",
+      "title": "Let It Go (Frozen OST)",
+      "author": "Kristen Anderson-Lopez & Robert Lopez",
+      "year": 2013,
+      "license": "All Rights Reserved",
+      "fingerprint": "A-B-C#-E-D-C#-B-A",
+      "bpm": 137
+    }
+  ],
+  "code": [
+    {
+      "id": "C-0001",
+      "title": "React useState 표준 패턴",
+      "author": "Meta (React)",
+      "year": 2018,
+      "license": "MIT",
+      "snippet": "const [count, setCount] = useState(0);"
+    },
+    {
+      "id": "C-0002",
+      "title": "Quicksort 구현 (CLRS)",
+      "author": "Cormen et al.",
+      "year": 1990,
+      "license": "Proprietary (Textbook)",
+      "snippet": "function quicksort(arr) { if (arr.length <= 1) return arr; const pivot = arr[0]; const left = arr.slice(1).filter(x => x < pivot); const right = arr.slice(1).filter(x => x >= pivot); return [...quicksort(left), pivot, ...quicksort(right)]; }"
+    },
+    {
+      "id": "C-0003",
+      "title": "Linux kernel scheduler snippet",
+      "author": "Linus Torvalds et al.",
+      "year": 1991,
+      "license": "GPL-2.0",
+      "snippet": "static void __sched_fork(unsigned long clone_flags, struct task_struct *p)"
+    },
+    {
+      "id": "C-0004",
+      "title": "Express Hello World",
+      "author": "Express.js Team",
+      "year": 2010,
+      "license": "MIT",
+      "snippet": "const express = require('express'); const app = express(); app.get('/', (req, res) => res.send('Hello World!'));"
+    }
+  ]
+}
