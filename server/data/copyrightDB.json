@@ -48,7 +48,7 @@
       "author": "Vincent van Gogh",
       "year": 1889,
       "license": "Public Domain",
-      "phash": "1101001110100110",
+      "phash": "1101001110100110110100111010011011010011101001101101001110100110",
       "tags": ["night", "stars", "village", "post-impressionism"]
     },
     {
@@ -57,7 +57,7 @@
       "author": "Leonardo da Vinci",
       "year": 1503,
       "license": "Public Domain",
-      "phash": "0011010110010110",
+      "phash": "0011010110010110001101011001011000110101100101100011010110010110",
       "tags": ["portrait", "woman", "renaissance"]
     },
     {
@@ -66,7 +66,7 @@
       "author": "Disney",
       "year": 1928,
       "license": "All Rights Reserved",
-      "phash": "1010110011100101",
+      "phash": "1010110011100101101011001110010110101100111001011010110011100101",
       "tags": ["mouse", "character", "cartoon"]
     },
     {
@@ -75,8 +75,17 @@
       "author": "Nintendo / Game Freak",
       "year": 1996,
       "license": "All Rights Reserved",
-      "phash": "1110001101011010",
+      "phash": "1110001101011010111000110101101011100011010110101110001101011010",
       "tags": ["pokemon", "character", "yellow"]
+    },
+    {
+      "id": "I-0005",
+      "title": "Solid Black Test Pattern",
+      "author": "Demo",
+      "year": 2025,
+      "license": "CC0",
+      "phash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "tags": ["test", "black", "demo"]
     }
   ],
   "audio": [

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { RISK_STYLES } from '../services/CopyrightService';
 
 const RiskBadge = ({ risk }) => {
@@ -11,9 +11,21 @@ const RiskBadge = ({ risk }) => {
 };
 
 const ResultDisplay = ({ result }) => {
-  if (!result) return null;
+  const [copied, setCopied] = useState(false);
 
+  if (!result) return null;
   const overall = RISK_STYLES[result.overallRisk] || RISK_STYLES.SAFE;
+
+  const handleCopy = async () => {
+    if (!result.attribution) return;
+    try {
+      await navigator.clipboard.writeText(result.attribution);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* ignore */
+    }
+  };
 
   return (
     <div className="bg-white rounded shadow p-5 space-y-4">
@@ -26,12 +38,41 @@ const ResultDisplay = ({ result }) => {
 
       <div className="text-sm text-gray-600">
         검사 시각: {new Date(result.checkedAt).toLocaleString()} · 일치 항목 {result.matchCount}건
+        {result.file && (
+          <span className="ml-2 text-gray-500">
+            · 파일: {result.file.name} ({Math.round(result.file.size / 1024)} KB)
+          </span>
+        )}
       </div>
+
+      {result.derivedContent && (
+        <div className="p-3 bg-gray-50 border border-gray-200 rounded text-xs font-mono break-all text-gray-700">
+          <strong className="block mb-1 font-sans text-sm not-italic">추출된 지문</strong>
+          {result.derivedContent}
+        </div>
+      )}
 
       <div className="p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-700">
         <strong className="block mb-1">권장 조치</strong>
         {result.suggestion}
       </div>
+
+      {result.attribution && (
+        <div className="p-3 bg-indigo-50 border border-indigo-200 rounded text-sm text-indigo-900">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <strong className="block mb-1">저작자 표시 (자동 생성)</strong>
+              {result.attribution}
+            </div>
+            <button
+              onClick={handleCopy}
+              className="shrink-0 px-3 py-1 text-xs rounded border border-indigo-300 text-indigo-700 hover:bg-indigo-100"
+            >
+              {copied ? '복사됨' : '복사'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {result.matches.length > 0 && (
         <div className="overflow-x-auto">

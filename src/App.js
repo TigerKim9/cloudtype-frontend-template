@@ -4,6 +4,7 @@ import ListGuests from "./components/ListGuests";
 import Header from "./components/Header";
 import AddGuest from "./components/AddGuest";
 import CopyrightChecker from "./components/CopyrightChecker";
+import HistoryPage from "./components/HistoryPage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
                 <Routes>
                     <Route path = "/" element={<CopyrightChecker />}></Route>
                     <Route path = "/copyright" element={<CopyrightChecker />}></Route>
+                    <Route path = "/history" element={<HistoryPage />}></Route>
                     <Route path = "/waitlist" element={<ListGuests />}></Route>
                     <Route path = "/add-guest" element={<AddGuest />}></Route>
                     <Route path = "/edit-guest/:id" element={<AddGuest />}></Route>

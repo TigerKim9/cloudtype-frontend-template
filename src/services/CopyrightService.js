@@ -2,18 +2,43 @@ import axios from 'axios';
 
 const API_BASE = process.env.REACT_APP_COPYRIGHT_API || '/api/copyright';
 
-export async function checkCopyright({ type, content, threshold, topK }) {
+export async function checkCopyright({ type, content, threshold, topK, source }) {
   const { data } = await axios.post(`${API_BASE}/check`, {
     type,
     content,
     threshold,
     topK,
+    source,
+  });
+  return data;
+}
+
+export async function uploadAndCheck({ type, file }) {
+  const form = new FormData();
+  form.append('type', type);
+  form.append('file', file);
+  const { data } = await axios.post(`${API_BASE}/upload`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
 }
 
 export async function fetchDB(type) {
   const { data } = await axios.get(`${API_BASE}/db/${type}`);
+  return data;
+}
+
+export async function fetchHistory() {
+  const { data } = await axios.get(`${API_BASE}/history`);
+  return data.items;
+}
+
+export async function clearHistory() {
+  await axios.delete(`${API_BASE}/history`);
+}
+
+export async function fetchStats() {
+  const { data } = await axios.get(`${API_BASE}/stats`);
   return data;
 }
 

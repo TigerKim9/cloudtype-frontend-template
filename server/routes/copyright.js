@@ -1,41 +1,33 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 const {
   textSimilarity,
-  hammingSimilarity,
   audioSimilarity,
   codeSimilarity,
   riskLevel,
 } = require('../utils/similarity');
+const { computePHash, hashSimilarity } = require('../utils/imageHash');
+const { computeAudioFingerprint } = require('../utils/audioHash');
+const { readHistory, appendHistory, clearHistory } = require('../utils/history');
+const { buildAttribution } = require('../utils/attribution');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
 const DB = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', 'data', 'copyrightDB.json'), 'utf8')
 );
 
 const TYPE_FIELDS = {
   text: { field: 'excerpt', sim: textSimilarity },
-  image: { field: 'phash', sim: hammingSimilarity },
+  image: { field: 'phash', sim: hashSimilarity },
   audio: { field: 'fingerprint', sim: audioSimilarity },
   code: { field: 'snippet', sim: codeSimilarity },
 };
 
-router.get('/db/:type', (req, res) => {
-  const { type } = req.params;
-  if (!DB[type]) return res.status(404).json({ error: 'Unknown type' });
-  res.json({ type, count: DB[type].length, items: DB[type] });
-});
-
-router.post('/check', (req, res) => {
-  const { type, content, threshold = 0.15, topK = 5 } = req.body || {};
-  if (!type || !TYPE_FIELDS[type]) {
-    return res.status(400).json({ error: 'type must be one of text/image/audio/code' });
-  }
-  if (content === undefined || content === null || content === '') {
-    return res.status(400).json({ error: 'content is required' });
-  }
-
+function runCheck(type, content, { threshold = 0.15, topK = 5 } = {}) {
   const { field, sim } = TYPE_FIELDS[type];
   const matches = DB[type]
     .map((item) => {
@@ -58,15 +50,16 @@ router.post('/check', (req, res) => {
   const top = matches[0];
   const overallRisk = top ? top.risk : 'SAFE';
 
-  res.json({
+  return {
     type,
     checkedAt: new Date().toISOString(),
     overallRisk,
     matchCount: matches.length,
     matches,
     suggestion: buildSuggestion(overallRisk, top),
-  });
-});
+    attribution: buildAttribution(top),
+  };
+}
 
 function buildSuggestion(risk, top) {
   if (!top || risk === 'SAFE') {
@@ -80,5 +73,101 @@ function buildSuggestion(risk, top) {
   }
   return `"${top.title}" (${top.author}, ${top.license})와 매우 유사합니다. 그대로 사용 시 저작권 침해 위험이 큽니다. 라이선스를 확인하거나 다른 표현으로 재작성하세요.`;
 }
+
+function preview(type, content) {
+  const s = String(content || '');
+  if (type === 'text' || type === 'code') {
+    return s.length > 120 ? `${s.slice(0, 120)}…` : s;
+  }
+  return s;
+}
+
+router.get('/db/:type', (req, res) => {
+  const { type } = req.params;
+  if (!DB[type]) return res.status(404).json({ error: 'Unknown type' });
+  res.json({ type, count: DB[type].length, items: DB[type] });
+});
+
+router.post('/check', (req, res) => {
+  const { type, content, threshold, topK, source = 'manual' } = req.body || {};
+  if (!type || !TYPE_FIELDS[type]) {
+    return res.status(400).json({ error: 'type must be one of text/image/audio/code' });
+  }
+  if (content === undefined || content === null || content === '') {
+    return res.status(400).json({ error: 'content is required' });
+  }
+
+  const result = runCheck(type, content, { threshold, topK });
+  const record = appendHistory({
+    type,
+    source,
+    contentPreview: preview(type, content),
+    overallRisk: result.overallRisk,
+    matchCount: result.matchCount,
+    topMatch: result.matches[0] || null,
+    checkedAt: result.checkedAt,
+  });
+  res.json({ ...result, historyId: record.id });
+});
+
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    const { type } = req.body || {};
+    if (!type || !TYPE_FIELDS[type]) {
+      return res.status(400).json({ error: 'type must be one of text/image/audio/code' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ error: 'file is required (multipart/form-data, field name "file")' });
+    }
+
+    let content;
+    if (type === 'image') {
+      content = await computePHash(req.file.buffer);
+    } else if (type === 'audio') {
+      content = computeAudioFingerprint(req.file.buffer);
+    } else {
+      content = req.file.buffer.toString('utf8');
+    }
+
+    const result = runCheck(type, content);
+    const record = appendHistory({
+      type,
+      source: `upload:${req.file.originalname}`,
+      contentPreview: preview(type, content),
+      overallRisk: result.overallRisk,
+      matchCount: result.matchCount,
+      topMatch: result.matches[0] || null,
+      checkedAt: result.checkedAt,
+    });
+    res.json({
+      ...result,
+      derivedContent: content,
+      file: { name: req.file.originalname, size: req.file.size, mime: req.file.mimetype },
+      historyId: record.id,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'upload processing failed' });
+  }
+});
+
+router.get('/history', (_req, res) => {
+  res.json({ items: readHistory() });
+});
+
+router.delete('/history', (_req, res) => {
+  clearHistory();
+  res.json({ ok: true });
+});
+
+router.get('/stats', (_req, res) => {
+  const list = readHistory();
+  const byType = {};
+  const byRisk = { SAFE: 0, LOW: 0, MEDIUM: 0, HIGH: 0 };
+  for (const h of list) {
+    byType[h.type] = (byType[h.type] || 0) + 1;
+    if (byRisk[h.overallRisk] !== undefined) byRisk[h.overallRisk]++;
+  }
+  res.json({ total: list.length, byType, byRisk });
+});
 
 module.exports = router;

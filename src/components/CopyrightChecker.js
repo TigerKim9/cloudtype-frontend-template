@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { checkCopyright } from '../services/CopyrightService';
+import { checkCopyright, uploadAndCheck } from '../services/CopyrightService';
 import ResultDisplay from './ResultDisplay';
 
 const TYPES = [
@@ -8,34 +8,44 @@ const TYPES = [
     label: '텍스트',
     placeholder: 'AI로 생성한 글, 시, 소설 일부를 붙여넣으세요.',
     inputType: 'textarea',
+    accept: '.txt,text/plain',
     hint: '한국어/영어 모두 지원. 3-gram Jaccard 유사도로 검사합니다.',
+    supportsUpload: true,
   },
   {
     key: 'image',
     label: '이미지',
-    placeholder: '이미지 perceptual hash (예: 1101001110100110)',
+    placeholder: 'pHash 직접 입력 또는 파일을 업로드하면 자동 계산',
     inputType: 'text',
-    hint: '데모: pHash 16-bit 문자열을 입력하면 등록 작품과 해밍 거리 비교합니다.',
+    accept: 'image/*',
+    hint: '파일 업로드 시 Jimp의 pHash로 64-bit perceptual hash를 계산해 DB와 비교합니다.',
+    supportsUpload: true,
   },
   {
     key: 'audio',
     label: '음악/오디오',
-    placeholder: '음표 시퀀스 (예: C-D-E-C-G-A-G)',
+    placeholder: '음표 시퀀스 (예: C-D-E-C) 또는 오디오 파일 업로드',
     inputType: 'text',
-    hint: '데모: 멜로디 핑거프린트(음표 시퀀스)를 입력하면 등록곡과 비교합니다.',
+    accept: 'audio/*',
+    hint: '파일 업로드 시 SHA-256 기반 음표 시퀀스 지문을 생성합니다.',
+    supportsUpload: true,
   },
   {
     key: 'code',
     label: '코드',
     placeholder: 'AI가 생성한 코드 스니펫을 붙여넣으세요.',
     inputType: 'textarea',
+    accept: '.js,.ts,.py,.java,.c,.cpp,.go,.rs,text/plain',
     hint: '5-gram Jaccard 유사도로 등록 코드와 비교합니다.',
+    supportsUpload: true,
   },
 ];
 
 const CopyrightChecker = () => {
   const [type, setType] = useState('text');
+  const [mode, setMode] = useState('text');
   const [content, setContent] = useState('');
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -44,12 +54,26 @@ const CopyrightChecker = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const data = await checkCopyright({ type, content });
+      let data;
+      if (mode === 'file') {
+        if (!file) {
+          setError('파일을 선택해 주세요.');
+          setLoading(false);
+          return;
+        }
+        data = await uploadAndCheck({ type, file });
+      } else {
+        if (!content.trim()) {
+          setError('내용을 입력해 주세요.');
+          setLoading(false);
+          return;
+        }
+        data = await checkCopyright({ type, content });
+      }
       setResult(data);
     } catch (err) {
       setError(err?.response?.data?.error || err.message || '서버 오류');
@@ -61,8 +85,11 @@ const CopyrightChecker = () => {
   const handleTypeChange = (key) => {
     setType(key);
     setContent('');
+    setFile(null);
     setResult(null);
     setError(null);
+    if (key === 'image' || key === 'audio') setMode('file');
+    else setMode('text');
   };
 
   return (
@@ -92,8 +119,41 @@ const CopyrightChecker = () => {
           ))}
         </div>
 
+        <div className="flex gap-2 mb-4 text-xs">
+          <button
+            type="button"
+            onClick={() => setMode('text')}
+            className={`px-3 py-1 rounded border ${mode === 'text' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 text-gray-600'}`}
+          >
+            직접 입력
+          </button>
+          {current.supportsUpload && (
+            <button
+              type="button"
+              onClick={() => setMode('file')}
+              className={`px-3 py-1 rounded border ${mode === 'file' ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 text-gray-600'}`}
+            >
+              파일 업로드
+            </button>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-3">
-          {current.inputType === 'textarea' ? (
+          {mode === 'file' ? (
+            <div className="border-2 border-dashed border-gray-300 rounded p-6 text-center">
+              <input
+                type="file"
+                accept={current.accept}
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="block mx-auto text-sm"
+              />
+              {file && (
+                <p className="mt-2 text-xs text-gray-600">
+                  {file.name} · {Math.round(file.size / 1024)} KB · {file.type || 'unknown'}
+                </p>
+              )}
+            </div>
+          ) : current.inputType === 'textarea' ? (
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -113,14 +173,14 @@ const CopyrightChecker = () => {
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => { setContent(''); setResult(null); setError(null); }}
+              onClick={() => { setContent(''); setFile(null); setResult(null); setError(null); }}
               className="px-4 py-2 rounded border border-gray-300 text-sm text-gray-700 hover:bg-gray-50"
             >
               초기화
             </button>
             <button
               type="submit"
-              disabled={loading || !content.trim()}
+              disabled={loading}
               className="px-4 py-2 rounded bg-gray-800 text-white text-sm font-medium disabled:opacity-40"
             >
               {loading ? '검사 중…' : '저작권 검사'}
