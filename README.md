@@ -18,8 +18,10 @@
 - **저작자 표시 자동 생성** — 라이선스(PD/CC0/CC-BY/MIT/GPL-2.0/All Rights Reserved)별 인용 문구 생성
 - **일괄 검사** — 여러 콘텐츠를 한 번에 (최대 50개) 검사
 - **검사 이력 & 통계** — 검사 기록 저장 및 위험도별 집계
-- **🆕 임베드 위젯** — 외부 영상 플랫폼이 `<script>` 한 줄로 자기 페이지에 저작권 검사 모듈을 삽입
+- **🆕 임베드 위젯** — 외부 영상 플랫폼이 `<script>` 한 줄로 자기 페이지에 저작권 검사 모듈을 삽입 (한국어/영어 지원)
 - **🆕 API 키 인증** — 임베드/외부 호출자 식별 + 분당 호출 제한
+- **🆕 ffmpeg 자동 감지** — 시스템에 ffmpeg 있으면 영상 프레임 pHash 사용, 없으면 binary MD5 fallback
+- **🆕 웹훅 알림** — HIGH 위험 등 임계치 초과 시 외부 URL로 HMAC-SHA256 서명된 POST 발송
 
 ## 🏗️ 구조
 
@@ -74,6 +76,10 @@ npm run test:server
 | `GET` | `/api/copyright/history` | 검사 이력 |
 | `DELETE` | `/api/copyright/history` | 이력 삭제 |
 | `GET` | `/api/copyright/stats` | 위험도/유형별 통계 |
+| `GET` | `/api/copyright/capabilities` | 지원 타입, ffmpeg 가용성, locale 목록 |
+| `GET POST DELETE` | `/api/copyright/webhooks[/:id]` | 웹훅 등록/조회/삭제 |
+| `GET` | `/api/copyright/webhooks/log` | 웹훅 전송 이력 |
+| `POST` | `/api/copyright/webhooks/:id/test` | 웹훅 테스트 발사 |
 
 `type` 값: `text` · `image` · `audio` · `video` · `code`
 
@@ -94,7 +100,33 @@ API 키는 `X-API-Key` 헤더 또는 `?apiKey=` 쿼리로 전달합니다. 데�
 발생 이벤트: `aicw:result`, `aicw:passed`, `aicw:blocked` (DOM CustomEvent). 호스트 페이지는 이를 받아 업로드 버튼을 활성화/비활성화합니다.
 
 라이브 데모: `http://localhost:4000/embed/demo.html` (백엔드 실행 중일 때).
-React 앱 내 `/embed` 경로에서 통합 가이드와 실시간 미리보기를 볼 수 있습니다.
+React 앱 내 `/embed` 경로에서 통합 가이드와 실시간 미리보기 (한국어/영어 전환) 를 볼 수 있습니다.
+
+## 🔔 웹훅 알림
+
+HIGH 위험 감지 시 외부 시스템(Slack, Discord, 내부 모더레이션 대시보드 등)으로 즉시 알림을 보낼 수 있습니다.
+
+```bash
+POST /api/copyright/webhooks
+{ "url": "https://your-host/hook", "minRisk": "HIGH", "secret": "your-secret" }
+```
+
+페이로드는 `X-Aicw-Signature` 헤더에 HMAC-SHA256으로 서명되어 전송됩니다.
+
+```js
+// 수신측 서명 검증 예시
+const sig = crypto.createHmac('sha256', SECRET).update(rawBody).digest('hex');
+if (sig !== req.headers['x-aicw-signature']) reject();
+```
+
+React 앱 `/webhooks` 페이지에서 웹훅 등록·테스트·전송 로그를 관리할 수 있습니다.
+
+## 🎬 영상 핑거프린트 — ffmpeg 자동 감지
+
+- **ffmpeg 미설치 환경**: 파일 4구간 MD5 해시로 32-hex 핑거프린트 생성 (기본값, 빠르지만 인코딩에 민감)
+- **ffmpeg 설치 환경**: 영상에서 2초 간격 키프레임 4장을 추출하고 64×64로 리사이즈 후 Jimp pHash로 시각 핑거프린트 생성 (재인코딩에 강함)
+
+`GET /api/copyright/capabilities`로 현재 사용 중인 방식을 확인할 수 있습니다.
 
 ### 검사 응답 예시
 

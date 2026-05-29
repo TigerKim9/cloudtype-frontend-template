@@ -8,6 +8,7 @@ const snippetBasic = `<!-- 호스트 사이트에 한 줄 삽입 -->
 <div data-aicw-widget
      data-api-key="YOUR_API_KEY"
      data-types="video,image,audio"
+     data-locale="en"
      data-block-on-high-risk="true"></div>
 <script src="https://YOUR_HOST/embed/copyright-widget.js"></script>`;
 
@@ -37,18 +38,23 @@ const Code = ({ children }) => (
 
 const EmbedDocs = () => {
   const [copied, setCopied] = useState('');
+  const [locale, setLocale] = useState('ko');
 
   useEffect(() => {
-    if (document.getElementById('aicw-widget-script')) {
-      if (window.AICopyrightWidget) window.AICopyrightWidget.init();
-      return;
-    }
-    const s = document.createElement('script');
-    s.id = 'aicw-widget-script';
-    s.src = WIDGET_SRC;
-    s.async = true;
-    document.body.appendChild(s);
-  }, []);
+    const ensureScript = () => {
+      if (document.getElementById('aicw-widget-script')) {
+        if (window.AICopyrightWidget) window.AICopyrightWidget.init();
+        return;
+      }
+      const s = document.createElement('script');
+      s.id = 'aicw-widget-script';
+      s.src = WIDGET_SRC;
+      s.async = true;
+      s.onload = () => window.AICopyrightWidget && window.AICopyrightWidget.init();
+      document.body.appendChild(s);
+    };
+    ensureScript();
+  }, [locale]);
   const copy = async (key, text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -117,25 +123,39 @@ const EmbedDocs = () => {
             <tr className="border-b"><td className="py-1 pr-3"><code>data-api-base</code></td><td>백엔드 API 베이스 URL</td><td>위젯 스크립트의 origin</td></tr>
             <tr className="border-b"><td className="py-1 pr-3"><code>data-types</code></td><td>표시할 콘텐츠 탭 (쉼표 구분)</td><td><code>video,image,audio,text,code</code></td></tr>
             <tr className="border-b"><td className="py-1 pr-3"><code>data-title</code></td><td>위젯 제목</td><td>AI 콘텐츠 저작권 검사</td></tr>
+            <tr className="border-b"><td className="py-1 pr-3"><code>data-locale</code></td><td>위젯 언어 (<code>ko</code> 또는 <code>en</code>)</td><td><code>ko</code></td></tr>
             <tr><td className="py-1 pr-3"><code>data-block-on-high-risk</code></td><td>HIGH 위험 시 차단 메시지 표시 + blocked 이벤트</td><td><code>false</code></td></tr>
           </tbody>
         </table>
       </div>
 
       <div className="bg-white rounded shadow p-5">
-        <h3 className="font-semibold text-gray-800 mb-2">실시간 데모</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-gray-800">실시간 데모</h3>
+          <div className="flex gap-1 text-xs">
+            <button
+              onClick={() => setLocale('ko')}
+              className={`px-2 py-1 rounded border ${locale === 'ko' ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600'}`}
+            >한국어</button>
+            <button
+              onClick={() => setLocale('en')}
+              className={`px-2 py-1 rounded border ${locale === 'en' ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-600'}`}
+            >English</button>
+          </div>
+        </div>
         <p className="text-xs text-gray-500 mb-2">
           백엔드가 실행 중일 때(<code>npm run server</code>) <a className="text-indigo-600 underline" href="http://localhost:4000/embed/demo.html" target="_blank" rel="noreferrer">/embed/demo.html</a>에서 호스트 사이트 시뮬레이션을 확인할 수 있습니다.
         </p>
         <div className="border border-gray-200 rounded p-3 bg-gray-50">
           <p className="text-xs text-gray-500 mb-2">이 페이지 내부에 실제 위젯을 임베드한 모습 ↓</p>
           <div
+            key={locale}
             id="aicw-demo-host"
             data-aicw-widget
             data-api-key="embed-test-key-001"
             data-api-base="http://localhost:4000"
             data-types="video,image,text"
-            data-title="라이브 임베드 미리보기"
+            data-locale={locale}
             data-block-on-high-risk="true"
           />
         </div>

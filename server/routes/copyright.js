@@ -15,6 +15,7 @@ const { computeVideoFingerprint } = require('../utils/videoHash');
 const { readHistory, appendHistory, clearHistory } = require('../utils/history');
 const { buildAttribution } = require('../utils/attribution');
 const { apiKeyAuth } = require('../utils/auth');
+const webhook = require('../utils/webhook');
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
@@ -114,6 +115,14 @@ router.post('/check', (req, res) => {
     topMatch: result.matches[0] || null,
     checkedAt: result.checkedAt,
   });
+  webhook
+    .dispatch({
+      event: 'check.completed',
+      apiKey: req.apiKey ? req.apiKey.name : null,
+      historyId: record.id,
+      result,
+    })
+    .catch(() => {});
   res.json({ ...result, historyId: record.id });
 });
 
@@ -172,7 +181,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     } else if (type === 'audio') {
       content = computeAudioFingerprint(req.file.buffer);
     } else if (type === 'video') {
-      content = computeVideoFingerprint(req.file.buffer);
+      content = await computeVideoFingerprint(req.file.buffer);
     } else {
       content = req.file.buffer.toString('utf8');
     }
@@ -181,12 +190,22 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const record = appendHistory({
       type,
       source: `upload:${req.file.originalname}`,
+      apiKey: req.apiKey ? req.apiKey.name : null,
       contentPreview: preview(type, content),
       overallRisk: result.overallRisk,
       matchCount: result.matchCount,
       topMatch: result.matches[0] || null,
       checkedAt: result.checkedAt,
     });
+    webhook
+      .dispatch({
+        event: 'check.completed',
+        apiKey: req.apiKey ? req.apiKey.name : null,
+        historyId: record.id,
+        result,
+        file: { name: req.file.originalname, size: req.file.size },
+      })
+      .catch(() => {});
     res.json({
       ...result,
       derivedContent: content,
@@ -216,6 +235,52 @@ router.get('/stats', (_req, res) => {
     if (byRisk[h.overallRisk] !== undefined) byRisk[h.overallRisk]++;
   }
   res.json({ total: list.length, byType, byRisk });
+});
+
+const { isFfmpegAvailable } = require('../utils/videoHash');
+router.get('/capabilities', (_req, res) => {
+  res.json({
+    types: Object.keys(TYPE_FIELDS),
+    ffmpeg: isFfmpegAvailable(),
+    videoFingerprintMethod: isFfmpegAvailable() ? 'frame-phash' : 'binary-md5',
+    locales: ['ko', 'en'],
+  });
+});
+
+router.get('/webhooks', (_req, res) => {
+  const list = webhook.readConfig().map((h) => ({ ...h, secret: h.secret ? '***' : null }));
+  res.json({ items: list });
+});
+
+router.post('/webhooks', (req, res) => {
+  const { url, name, events, minRisk, apiKeyFilter, secret, timeoutMs } = req.body || {};
+  if (!url || !/^https?:\/\//.test(url)) {
+    return res.status(400).json({ error: 'url must be http(s)' });
+  }
+  const hook = webhook.addHook({ url, name, events, minRisk, apiKeyFilter, secret, timeoutMs });
+  res.json({ ...hook, secret: hook.secret ? '***' : null });
+});
+
+router.delete('/webhooks/:id', (req, res) => {
+  const ok = webhook.removeHook(req.params.id);
+  if (!ok) return res.status(404).json({ error: 'not found' });
+  res.json({ ok: true });
+});
+
+router.get('/webhooks/log', (_req, res) => {
+  res.json({ items: webhook.readLog() });
+});
+
+router.post('/webhooks/:id/test', async (req, res) => {
+  const hooks = webhook.readConfig();
+  const target = hooks.find((h) => h.id === req.params.id);
+  if (!target) return res.status(404).json({ error: 'not found' });
+  const fires = await webhook.dispatch({
+    event: 'test',
+    apiKey: req.apiKey ? req.apiKey.name : null,
+    result: { overallRisk: 'HIGH', matchCount: 1, matches: [{ title: 'Test fire', score: 1 }] },
+  });
+  res.json({ fired: fires });
 });
 
 module.exports = router;

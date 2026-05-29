@@ -10,7 +10,7 @@ const {
 } = require('../utils/similarity');
 const { buildAttribution } = require('../utils/attribution');
 const { computeAudioFingerprint } = require('../utils/audioHash');
-const { computeVideoFingerprint } = require('../utils/videoHash');
+const { computeVideoFingerprint, computeVideoFingerprintSync } = require('../utils/videoHash');
 
 test('textSimilarity: identical text scores 1', () => {
   const s = '님은 갔습니다. 아아 사랑하는 나의 님은 갔습니다.';
@@ -98,11 +98,19 @@ test('videoSimilarity: different fingerprints score low', () => {
   assert.ok(videoSimilarity(a, b) < 0.2);
 });
 
-test('computeVideoFingerprint: deterministic 32-hex', () => {
+test('computeVideoFingerprintSync: deterministic 32-hex', () => {
   const buf = Buffer.alloc(1024, 0xab);
-  const fp1 = computeVideoFingerprint(buf);
-  const fp2 = computeVideoFingerprint(buf);
+  const fp1 = computeVideoFingerprintSync(buf);
+  const fp2 = computeVideoFingerprintSync(buf);
   assert.strictEqual(fp1, fp2);
   assert.strictEqual(fp1.length, 32);
   assert.match(fp1, /^[0-9a-f]+$/);
+});
+
+test('computeVideoFingerprint: async returns 32-hex (falls back when no ffmpeg)', async () => {
+  const buf = Buffer.alloc(1024, 0xcd);
+  const fp = await computeVideoFingerprint(buf);
+  assert.strictEqual(typeof fp, 'string');
+  assert.strictEqual(fp.length, 32);
+  assert.match(fp, /^[0-9a-f]+$/);
 });

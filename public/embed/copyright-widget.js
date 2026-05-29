@@ -4,6 +4,47 @@
   var NS = 'aicw';
   var STYLE_ID = NS + '-styles';
 
+  var I18N = {
+    ko: {
+      title: 'AI 콘텐츠 저작권 검사',
+      subtitle: '업로드 전 AI 콘텐츠의 저작권 위험을 확인하세요.',
+      typeText: '텍스트', typeImage: '이미지', typeAudio: '음악', typeVideo: '영상', typeCode: '코드',
+      dropHint: '파일을 끌어다 놓거나 클릭하여 선택',
+      placeholderText: 'AI가 생성한 텍스트…',
+      placeholderCode: 'AI가 생성한 코드…',
+      btnSubmit: '저작권 검사',
+      btnLoading: '검사 중…',
+      resultTitle: '검사 결과',
+      attrPrefix: '저작자 표시: ',
+      riskSafe: '안전', riskLow: '낮음', riskMed: '중간', riskHigh: '높음',
+      riskLabel: '위험 ',
+      blocked: '⚠ 업로드 차단됨: 침해 위험이 높습니다.',
+      errSelectFile: '파일을 선택해 주세요.',
+      errEnterContent: '내용을 입력해 주세요.',
+      errRequest: '요청 실패',
+      poweredBy: 'Powered by AI Copyright API',
+    },
+    en: {
+      title: 'AI Content Copyright Check',
+      subtitle: 'Verify copyright risk before uploading AI-generated content.',
+      typeText: 'Text', typeImage: 'Image', typeAudio: 'Audio', typeVideo: 'Video', typeCode: 'Code',
+      dropHint: 'Drag & drop a file or click to choose',
+      placeholderText: 'AI-generated text…',
+      placeholderCode: 'AI-generated code…',
+      btnSubmit: 'Check Copyright',
+      btnLoading: 'Checking…',
+      resultTitle: 'Result',
+      attrPrefix: 'Attribution: ',
+      riskSafe: 'Safe', riskLow: 'Low', riskMed: 'Medium', riskHigh: 'High',
+      riskLabel: 'Risk ',
+      blocked: '⚠ Upload blocked: high infringement risk.',
+      errSelectFile: 'Please choose a file.',
+      errEnterContent: 'Please enter content.',
+      errRequest: 'Request failed',
+      poweredBy: 'Powered by AI Copyright API',
+    },
+  };
+
   var SCRIPT = document.currentScript;
   var DEFAULTS = {
     apiBase: (SCRIPT && SCRIPT.getAttribute('data-api-base')) ||
@@ -11,24 +52,31 @@
     apiKey: (SCRIPT && SCRIPT.getAttribute('data-api-key')) || '',
     target: (SCRIPT && SCRIPT.getAttribute('data-target')) || '',
     types: (SCRIPT && SCRIPT.getAttribute('data-types')) || 'video,image,audio,text,code',
-    title: (SCRIPT && SCRIPT.getAttribute('data-title')) || 'AI 콘텐츠 저작권 검사',
+    title: (SCRIPT && SCRIPT.getAttribute('data-title')) || '',
+    locale: (SCRIPT && SCRIPT.getAttribute('data-locale')) || 'ko',
     blockOnHighRisk: (SCRIPT && SCRIPT.getAttribute('data-block-on-high-risk')) === 'true',
   };
 
-  var TYPE_LABEL = {
-    text: '텍스트',
-    image: '이미지',
-    audio: '음악',
-    video: '영상',
-    code: '코드',
-  };
+  function t(locale, key) {
+    var dict = I18N[locale] || I18N.ko;
+    return dict[key] != null ? dict[key] : (I18N.ko[key] || key);
+  }
 
-  var RISK_COLOR = {
-    SAFE: { bg: '#dcfce7', fg: '#166534', label: '안전' },
-    LOW: { bg: '#dbeafe', fg: '#1e40af', label: '낮음' },
-    MEDIUM: { bg: '#fef3c7', fg: '#92400e', label: '중간' },
-    HIGH: { bg: '#fee2e2', fg: '#991b1b', label: '높음' },
-  };
+  function typeLabel(locale, type) {
+    var key = 'type' + type.charAt(0).toUpperCase() + type.slice(1);
+    return t(locale, key);
+  }
+
+  function riskInfo(locale, risk) {
+    var palette = {
+      SAFE: { bg: '#dcfce7', fg: '#166534', labelKey: 'riskSafe' },
+      LOW: { bg: '#dbeafe', fg: '#1e40af', labelKey: 'riskLow' },
+      MEDIUM: { bg: '#fef3c7', fg: '#92400e', labelKey: 'riskMed' },
+      HIGH: { bg: '#fee2e2', fg: '#991b1b', labelKey: 'riskHigh' },
+    };
+    var p = palette[risk] || palette.SAFE;
+    return { bg: p.bg, fg: p.fg, label: t(locale, p.labelKey) };
+  }
 
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -92,9 +140,10 @@
       error: null,
     };
 
+    var locale = opts.locale || 'ko';
     var root = el('div', { class: NS + '-root' });
-    root.appendChild(el('p', { class: NS + '-title', text: opts.title }));
-    root.appendChild(el('p', { class: NS + '-sub', text: '업로드 전 AI 콘텐츠의 저작권 위험을 확인하세요.' }));
+    root.appendChild(el('p', { class: NS + '-title', text: opts.title || t(locale, 'title') }));
+    root.appendChild(el('p', { class: NS + '-sub', text: t(locale, 'subtitle') }));
 
     var tabs = el('div', { class: NS + '-tabs' });
     var bodyArea = el('div');
@@ -113,12 +162,12 @@
 
     function drawTabs() {
       tabs.innerHTML = '';
-      opts.types.forEach(function (t) {
+      opts.types.forEach(function (ty) {
         var b = el('button', {
-          class: NS + '-tab' + (state.type === t ? ' active' : ''),
+          class: NS + '-tab' + (state.type === ty ? ' active' : ''),
           type: 'button',
-          onclick: function () { setType(t); },
-          text: TYPE_LABEL[t] || t,
+          onclick: function () { setType(ty); },
+          text: typeLabel(locale, ty),
         });
         tabs.appendChild(b);
       });
@@ -126,17 +175,17 @@
 
     function drawBody() {
       bodyArea.innerHTML = '';
-      var t = state.type;
-      var fileTypes = (t === 'image' || t === 'audio' || t === 'video');
+      var ty = state.type;
+      var fileTypes = (ty === 'image' || ty === 'audio' || ty === 'video');
 
       if (fileTypes) {
         var drop = el('div', {
           class: NS + '-drop',
-          text: state.file ? state.file.name + ' (' + Math.round(state.file.size / 1024) + ' KB)' : '파일을 끌어다 놓거나 클릭하여 선택',
+          text: state.file ? state.file.name + ' (' + Math.round(state.file.size / 1024) + ' KB)' : t(locale, 'dropHint'),
         });
         var input = el('input', {
           type: 'file',
-          accept: t === 'image' ? 'image/*' : (t === 'audio' ? 'audio/*' : 'video/*'),
+          accept: ty === 'image' ? 'image/*' : (ty === 'audio' ? 'audio/*' : 'video/*'),
           style: 'display:none',
         });
         input.addEventListener('change', function (e) {
@@ -155,9 +204,9 @@
         bodyArea.appendChild(drop);
         bodyArea.appendChild(input);
       } else {
-        var ta = el(t === 'code' || t === 'text' ? 'textarea' : 'input', {
-          class: t === 'code' || t === 'text' ? NS + '-textarea' : NS + '-input',
-          placeholder: t === 'code' ? 'AI가 생성한 코드…' : 'AI가 생성한 텍스트…',
+        var ta = el(ty === 'code' || ty === 'text' ? 'textarea' : 'input', {
+          class: ty === 'code' || ty === 'text' ? NS + '-textarea' : NS + '-input',
+          placeholder: ty === 'code' ? t(locale, 'placeholderCode') : t(locale, 'placeholderText'),
         });
         ta.value = state.content;
         ta.addEventListener('input', function (e) { state.content = e.target.value; });
@@ -167,7 +216,7 @@
       var btn = el('button', {
         class: NS + '-btn',
         type: 'button',
-        text: state.loading ? '검사 중…' : '저작권 검사',
+        text: state.loading ? t(locale, 'btnLoading') : t(locale, 'btnSubmit'),
         onclick: runCheck,
       });
       if (state.loading) btn.disabled = true;
@@ -182,18 +231,18 @@
       }
       if (!state.result) return;
       var r = state.result;
-      var color = RISK_COLOR[r.overallRisk] || RISK_COLOR.SAFE;
+      var color = riskInfo(locale, r.overallRisk);
 
       var box = el('div', {
         class: NS + '-result',
         style: 'background:' + color.bg + ';color:' + color.fg,
       });
       var head = el('div', { class: NS + '-row' });
-      head.appendChild(el('strong', { text: '검사 결과' }));
+      head.appendChild(el('strong', { text: t(locale, 'resultTitle') }));
       head.appendChild(el('span', {
         class: NS + '-badge',
         style: 'background:' + color.fg + ';color:#fff',
-        text: '위험 ' + color.label,
+        text: t(locale, 'riskLabel') + color.label,
       }));
       box.appendChild(head);
       box.appendChild(el('div', { style: 'font-size:12px', text: r.suggestion }));
@@ -208,11 +257,11 @@
       resultArea.appendChild(box);
 
       if (r.attribution) {
-        resultArea.appendChild(el('div', { class: NS + '-attr', text: '저작자 표시: ' + r.attribution }));
+        resultArea.appendChild(el('div', { class: NS + '-attr', text: t(locale, 'attrPrefix') + r.attribution }));
       }
 
       if (opts.blockOnHighRisk && r.overallRisk === 'HIGH') {
-        resultArea.appendChild(el('div', { class: NS + '-blocked', text: '⚠ 업로드 차단됨: 침해 위험이 높습니다.' }));
+        resultArea.appendChild(el('div', { class: NS + '-blocked', text: t(locale, 'blocked') }));
         dispatch(host, 'blocked', { result: r });
       } else {
         dispatch(host, 'passed', { result: r });
@@ -234,7 +283,7 @@
       if (fileTypes) {
         if (!state.file) {
           state.loading = false;
-          state.error = '파일을 선택해 주세요.';
+          state.error = t(locale, 'errSelectFile');
           drawBody(); drawResult();
           return;
         }
@@ -247,7 +296,7 @@
       } else {
         if (!state.content.trim()) {
           state.loading = false;
-          state.error = '내용을 입력해 주세요.';
+          state.error = t(locale, 'errEnterContent');
           drawBody(); drawResult();
           return;
         }
@@ -272,7 +321,7 @@
         })
         .catch(function (err) {
           state.loading = false;
-          state.error = err.message || '요청 실패';
+          state.error = err.message || t(locale, 'errRequest');
           drawBody(); drawResult();
         });
     }
@@ -282,7 +331,7 @@
     root.appendChild(tabs);
     root.appendChild(bodyArea);
     root.appendChild(resultArea);
-    root.appendChild(el('div', { class: NS + '-foot', text: 'Powered by AI Copyright API' }));
+    root.appendChild(el('div', { class: NS + '-foot', text: t(locale, 'poweredBy') }));
 
     host.innerHTML = '';
     host.appendChild(root);
@@ -303,7 +352,7 @@
     }
     hosts.forEach(function (h) {
       var perHost = Object.assign({}, opts);
-      ['api-base', 'api-key', 'types', 'title', 'block-on-high-risk'].forEach(function (k) {
+      ['api-base', 'api-key', 'types', 'title', 'locale', 'block-on-high-risk'].forEach(function (k) {
         var v = h.getAttribute('data-' + k);
         if (v != null) {
           var key = k.replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });

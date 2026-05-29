@@ -26,3 +26,4 @@ yarn-error.log*
 
 # runtime data
 /server/data/history.json
+/server/data/webhook-log.json

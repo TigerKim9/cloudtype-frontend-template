@@ -7,6 +7,7 @@ import CopyrightChecker from "./components/CopyrightChecker";
 import BatchChecker from "./components/BatchChecker";
 import HistoryPage from "./components/HistoryPage";
 import EmbedDocs from "./components/EmbedDocs";
+import WebhooksPage from "./components/WebhooksPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
                     <Route path = "/batch" element={<BatchChecker />}></Route>
                     <Route path = "/history" element={<HistoryPage />}></Route>
                     <Route path = "/embed" element={<EmbedDocs />}></Route>
+                    <Route path = "/webhooks" element={<WebhooksPage />}></Route>
                     <Route path = "/waitlist" element={<ListGuests />}></Route>
                     <Route path = "/add-guest" element={<AddGuest />}></Route>
                     <Route path = "/edit-guest/:id" element={<AddGuest />}></Route>
