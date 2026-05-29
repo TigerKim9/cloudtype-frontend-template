@@ -23,6 +23,15 @@ export async function uploadAndCheck({ type, file }) {
   return data;
 }
 
+export async function checkBatch({ items, threshold, topK }) {
+  const { data } = await axios.post(`${API_BASE}/check-batch`, {
+    items,
+    threshold,
+    topK,
+  });
+  return data;
+}
+
 export async function fetchDB(type) {
   const { data } = await axios.get(`${API_BASE}/db/${type}`);
   return data;

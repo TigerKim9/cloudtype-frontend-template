@@ -4,6 +4,7 @@ import ListGuests from "./components/ListGuests";
 import Header from "./components/Header";
 import AddGuest from "./components/AddGuest";
 import CopyrightChecker from "./components/CopyrightChecker";
+import BatchChecker from "./components/BatchChecker";
 import HistoryPage from "./components/HistoryPage";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
                 <Routes>
                     <Route path = "/" element={<CopyrightChecker />}></Route>
                     <Route path = "/copyright" element={<CopyrightChecker />}></Route>
+                    <Route path = "/batch" element={<BatchChecker />}></Route>
                     <Route path = "/history" element={<HistoryPage />}></Route>
                     <Route path = "/waitlist" element={<ListGuests />}></Route>
                     <Route path = "/add-guest" element={<AddGuest />}></Route>

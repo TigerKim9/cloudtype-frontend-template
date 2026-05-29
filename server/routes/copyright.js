@@ -110,6 +110,45 @@ router.post('/check', (req, res) => {
   res.json({ ...result, historyId: record.id });
 });
 
+router.post('/check-batch', (req, res) => {
+  const { items, threshold, topK, source = 'batch' } = req.body || {};
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'items must be a non-empty array of { type, content }' });
+  }
+  if (items.length > 50) {
+    return res.status(400).json({ error: 'batch size limited to 50 items' });
+  }
+
+  const results = items.map((item, index) => {
+    const { type, content, label } = item || {};
+    if (!type || !TYPE_FIELDS[type]) {
+      return { index, label, error: 'invalid type' };
+    }
+    if (content === undefined || content === null || content === '') {
+      return { index, label, error: 'content is required' };
+    }
+    const result = runCheck(type, content, { threshold, topK });
+    appendHistory({
+      type,
+      source,
+      contentPreview: preview(type, content),
+      overallRisk: result.overallRisk,
+      matchCount: result.matchCount,
+      topMatch: result.matches[0] || null,
+      checkedAt: result.checkedAt,
+    });
+    return { index, label, ...result };
+  });
+
+  const counts = { SAFE: 0, LOW: 0, MEDIUM: 0, HIGH: 0, ERROR: 0 };
+  for (const r of results) {
+    if (r.error) counts.ERROR++;
+    else if (counts[r.overallRisk] !== undefined) counts[r.overallRisk]++;
+  }
+
+  res.json({ total: results.length, counts, results });
+});
+
 router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     const { type } = req.body || {};
