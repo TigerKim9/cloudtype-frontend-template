@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchHistory, clearHistory, fetchStats, RISK_STYLES } from '../services/CopyrightService';
 
-const TYPE_LABEL = { text: '텍스트', image: '이미지', audio: '음악', code: '코드' };
+const TYPE_LABEL = { text: '텍스트', image: '이미지', audio: '음악', video: '영상', code: '코드' };
 
 const StatCard = ({ label, value, tone = 'gray' }) => {
   const toneCls = {

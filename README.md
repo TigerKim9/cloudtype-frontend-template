@@ -12,12 +12,14 @@
 
 ## ✨ 주요 기능
 
-- **콘텐츠 유형별 유사도 검사** — 텍스트/코드(n-gram Jaccard), 이미지(pHash 해밍 거리), 음악(음표 시퀀스)
-- **파일 업로드 검사** — 이미지/오디오 파일을 올리면 서버가 지문(pHash·핑거프린트)을 자동 계산
+- **콘텐츠 유형별 유사도 검사** — 텍스트/코드(n-gram Jaccard), 이미지(pHash 해밍 거리), 음악(음표 시퀀스), **영상(4구간 MD5 핑거프린트)**
+- **파일 업로드 검사** — 이미지/오디오/영상 파일을 올리면 서버가 지문(pHash·핑거프린트)을 자동 계산
 - **라이선스 기반 위험도** — Public Domain은 완화, MIT/All Rights Reserved 등은 유사도에 따라 위험 등급 상향
 - **저작자 표시 자동 생성** — 라이선스(PD/CC0/CC-BY/MIT/GPL-2.0/All Rights Reserved)별 인용 문구 생성
 - **일괄 검사** — 여러 콘텐츠를 한 번에 (최대 50개) 검사
 - **검사 이력 & 통계** — 검사 기록 저장 및 위험도별 집계
+- **🆕 임베드 위젯** — 외부 영상 플랫폼이 `<script>` 한 줄로 자기 페이지에 저작권 검사 모듈을 삽입
+- **🆕 API 키 인증** — 임베드/외부 호출자 식별 + 분당 호출 제한
 
 ## 🏗️ 구조
 
@@ -73,7 +75,26 @@ npm run test:server
 | `DELETE` | `/api/copyright/history` | 이력 삭제 |
 | `GET` | `/api/copyright/stats` | 위험도/유형별 통계 |
 
-`type` 값: `text` · `image` · `audio` · `code`
+`type` 값: `text` · `image` · `audio` · `video` · `code`
+
+API 키는 `X-API-Key` 헤더 또는 `?apiKey=` 쿼리로 전달합니다. 데모 키: `embed-test-key-001`, `demo-key-public-2025`.
+
+## 🧩 임베드 위젯
+
+외부 호스트(예: 영상 업로드 플랫폼) 페이지에 한 줄로 삽입할 수 있습니다.
+
+```html
+<div data-aicw-widget
+     data-api-key="embed-test-key-001"
+     data-types="video,image,audio"
+     data-block-on-high-risk="true"></div>
+<script src="https://YOUR_HOST/embed/copyright-widget.js"></script>
+```
+
+발생 이벤트: `aicw:result`, `aicw:passed`, `aicw:blocked` (DOM CustomEvent). 호스트 페이지는 이를 받아 업로드 버튼을 활성화/비활성화합니다.
+
+라이브 데모: `http://localhost:4000/embed/demo.html` (백엔드 실행 중일 때).
+React 앱 내 `/embed` 경로에서 통합 가이드와 실시간 미리보기를 볼 수 있습니다.
 
 ### 검사 응답 예시
 

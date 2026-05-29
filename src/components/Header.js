@@ -21,6 +21,7 @@ const Header = () => {
                         <NavLink to="/copyright" className={navClass}>저작권 검사</NavLink>
                         <NavLink to="/batch" className={navClass}>일괄 검사</NavLink>
                         <NavLink to="/history" className={navClass}>이력</NavLink>
+                        <NavLink to="/embed" className={navClass}>임베드</NavLink>
                         <NavLink to="/waitlist" className={navClass}>대기자</NavLink>
                     </div>
                 </nav>

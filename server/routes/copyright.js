@@ -6,15 +6,18 @@ const {
   textSimilarity,
   audioSimilarity,
   codeSimilarity,
+  videoSimilarity,
   riskLevel,
 } = require('../utils/similarity');
 const { computePHash, hashSimilarity } = require('../utils/imageHash');
 const { computeAudioFingerprint } = require('../utils/audioHash');
+const { computeVideoFingerprint } = require('../utils/videoHash');
 const { readHistory, appendHistory, clearHistory } = require('../utils/history');
 const { buildAttribution } = require('../utils/attribution');
+const { apiKeyAuth } = require('../utils/auth');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
 const DB = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', 'data', 'copyrightDB.json'), 'utf8')
@@ -24,8 +27,11 @@ const TYPE_FIELDS = {
   text: { field: 'excerpt', sim: textSimilarity },
   image: { field: 'phash', sim: hashSimilarity },
   audio: { field: 'fingerprint', sim: audioSimilarity },
+  video: { field: 'fingerprint', sim: videoSimilarity },
   code: { field: 'snippet', sim: codeSimilarity },
 };
+
+router.use(apiKeyAuth({ required: false }));
 
 function runCheck(type, content, { threshold = 0.15, topK = 5 } = {}) {
   const { field, sim } = TYPE_FIELDS[type];
@@ -91,7 +97,7 @@ router.get('/db/:type', (req, res) => {
 router.post('/check', (req, res) => {
   const { type, content, threshold, topK, source = 'manual' } = req.body || {};
   if (!type || !TYPE_FIELDS[type]) {
-    return res.status(400).json({ error: 'type must be one of text/image/audio/code' });
+    return res.status(400).json({ error: 'type must be one of text/image/audio/video/code' });
   }
   if (content === undefined || content === null || content === '') {
     return res.status(400).json({ error: 'content is required' });
@@ -101,6 +107,7 @@ router.post('/check', (req, res) => {
   const record = appendHistory({
     type,
     source,
+    apiKey: req.apiKey ? req.apiKey.name : null,
     contentPreview: preview(type, content),
     overallRisk: result.overallRisk,
     matchCount: result.matchCount,
@@ -153,7 +160,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     const { type } = req.body || {};
     if (!type || !TYPE_FIELDS[type]) {
-      return res.status(400).json({ error: 'type must be one of text/image/audio/code' });
+      return res.status(400).json({ error: 'type must be one of text/image/audio/video/code' });
     }
     if (!req.file) {
       return res.status(400).json({ error: 'file is required (multipart/form-data, field name "file")' });
@@ -164,6 +171,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       content = await computePHash(req.file.buffer);
     } else if (type === 'audio') {
       content = computeAudioFingerprint(req.file.buffer);
+    } else if (type === 'video') {
+      content = computeVideoFingerprint(req.file.buffer);
     } else {
       content = req.file.buffer.toString('utf8');
     }

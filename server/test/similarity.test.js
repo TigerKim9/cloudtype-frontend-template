@@ -5,10 +5,12 @@ const {
   hammingSimilarity,
   audioSimilarity,
   codeSimilarity,
+  videoSimilarity,
   riskLevel,
 } = require('../utils/similarity');
 const { buildAttribution } = require('../utils/attribution');
 const { computeAudioFingerprint } = require('../utils/audioHash');
+const { computeVideoFingerprint } = require('../utils/videoHash');
 
 test('textSimilarity: identical text scores 1', () => {
   const s = '님은 갔습니다. 아아 사랑하는 나의 님은 갔습니다.';
@@ -83,4 +85,24 @@ test('computeAudioFingerprint: deterministic and uses note alphabet', () => {
   const fp2 = computeAudioFingerprint(buf);
   assert.strictEqual(fp1, fp2, 'fingerprint must be deterministic');
   assert.match(fp1, /^[A-G](-[A-G])*$/, 'fingerprint should be note sequence');
+});
+
+test('videoSimilarity: identical fingerprints score 1', () => {
+  const fp = 'ab12cd34ef56ab12cd34ef56ab12cd34';
+  assert.strictEqual(videoSimilarity(fp, fp), 1);
+});
+
+test('videoSimilarity: different fingerprints score low', () => {
+  const a = 'ab12cd34ef56ab12cd34ef56ab12cd34';
+  const b = 'ffffffffaaaaaaaa1111111122222222';
+  assert.ok(videoSimilarity(a, b) < 0.2);
+});
+
+test('computeVideoFingerprint: deterministic 32-hex', () => {
+  const buf = Buffer.alloc(1024, 0xab);
+  const fp1 = computeVideoFingerprint(buf);
+  const fp2 = computeVideoFingerprint(buf);
+  assert.strictEqual(fp1, fp2);
+  assert.strictEqual(fp1.length, 32);
+  assert.match(fp1, /^[0-9a-f]+$/);
 });

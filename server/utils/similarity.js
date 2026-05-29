@@ -65,6 +65,19 @@ function codeSimilarity(a, b) {
   return jaccard(ngrams(stripA, 5), ngrams(stripB, 5));
 }
 
+function videoSimilarity(a, b) {
+  const x = String(a || '').toLowerCase();
+  const y = String(b || '').toLowerCase();
+  if (!x || !y) return 0;
+  const chunkLen = 8;
+  const setA = new Set();
+  const setB = new Set();
+  for (let i = 0; i + chunkLen <= x.length; i += chunkLen) setA.add(x.slice(i, i + chunkLen));
+  for (let i = 0; i + chunkLen <= y.length; i += chunkLen) setB.add(y.slice(i, i + chunkLen));
+  if (!setA.size || !setB.size) return 0;
+  return jaccard(setA, setB);
+}
+
 function riskLevel(score, license) {
   const isPublicDomain = /public domain|cc0/i.test(license || '');
   if (score >= 0.6 && !isPublicDomain) return 'HIGH';
@@ -79,5 +92,6 @@ module.exports = {
   hammingSimilarity,
   audioSimilarity,
   codeSimilarity,
+  videoSimilarity,
   riskLevel,
 };

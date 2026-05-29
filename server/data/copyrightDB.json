@@ -117,6 +117,53 @@
       "bpm": 137
     }
   ],
+  "video": [
+    {
+      "id": "V-0001",
+      "title": "Big Buck Bunny",
+      "author": "Blender Foundation",
+      "year": 2008,
+      "license": "CC-BY",
+      "fingerprint": "ab12cd34ef56ab12cd34ef56ab12cd34",
+      "duration_sec": 596
+    },
+    {
+      "id": "V-0002",
+      "title": "Sintel",
+      "author": "Blender Foundation",
+      "year": 2010,
+      "license": "CC-BY",
+      "fingerprint": "11223344556677881122334455667788",
+      "duration_sec": 888
+    },
+    {
+      "id": "V-0003",
+      "title": "Disney Frozen - Let It Go Scene",
+      "author": "Disney",
+      "year": 2013,
+      "license": "All Rights Reserved",
+      "fingerprint": "deadbeefcafebabedeadbeefcafebabe",
+      "duration_sec": 215
+    },
+    {
+      "id": "V-0004",
+      "title": "Marvel Avengers Endgame Trailer",
+      "author": "Marvel Studios",
+      "year": 2019,
+      "license": "All Rights Reserved",
+      "fingerprint": "feedfacefeedfacefeedfacefeedface",
+      "duration_sec": 142
+    },
+    {
+      "id": "V-0005",
+      "title": "Demo Test Pattern (Black Frame)",
+      "author": "Demo",
+      "year": 2025,
+      "license": "CC0",
+      "fingerprint": "00000000000000000000000000000000",
+      "duration_sec": 10
+    }
+  ],
   "code": [
     {
       "id": "C-0001",

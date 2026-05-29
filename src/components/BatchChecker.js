@@ -5,6 +5,7 @@ const TYPES = [
   { key: 'text', label: '텍스트' },
   { key: 'image', label: '이미지' },
   { key: 'audio', label: '음악' },
+  { key: 'video', label: '영상' },
   { key: 'code', label: '코드' },
 ];
 

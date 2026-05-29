@@ -1,0 +1,16 @@
+[
+  {
+    "key": "demo-key-public-2025",
+    "name": "Public Demo Key",
+    "active": true,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "rateLimitPerMinute": 60
+  },
+  {
+    "key": "embed-test-key-001",
+    "name": "Embed Widget Test Key",
+    "active": true,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "rateLimitPerMinute": 30
+  }
+]

@@ -31,6 +31,15 @@ const TYPES = [
     supportsUpload: true,
   },
   {
+    key: 'video',
+    label: '영상',
+    placeholder: '영상 fingerprint (32-hex) 또는 파일 업로드',
+    inputType: 'text',
+    accept: 'video/*',
+    hint: '파일 업로드 시 4구간 MD5 해시로 32-hex 지문을 생성해 DB와 비교합니다.',
+    supportsUpload: true,
+  },
+  {
     key: 'code',
     label: '코드',
     placeholder: 'AI가 생성한 코드 스니펫을 붙여넣으세요.',
@@ -88,7 +97,7 @@ const CopyrightChecker = () => {
     setFile(null);
     setResult(null);
     setError(null);
-    if (key === 'image' || key === 'audio') setMode('file');
+    if (key === 'image' || key === 'audio' || key === 'video') setMode('file');
     else setMode('text');
   };
 
